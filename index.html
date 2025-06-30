@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MindTrap Game</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      background: #111;
+      color: #eee;
+      padding: 20px;
+    }
+    .clue-box, .hidden-clues, .result, .guess-box {
+      margin: 20px auto;
+      padding: 15px;
+      background: #222;
+      border-radius: 10px;
+      width: 80%;
+      max-width: 500px;
+    }
+    button {
+      padding: 10px 15px;
+      margin: 5px;
+      border: none;
+      background: #4caf50;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    input {
+      padding: 10px;
+      width: 60px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧠 MindTrap</h1>
+  <p>Guess the secret number (1–100)!</p>
+
+  <div class="clue-box" id="clues"></div>
+
+  <div class="hidden-clues" id="hiddenClues">
+    <p><strong>Choose one hidden clue (only once):</strong></p>
+    <div id="hiddenButtons"></div>
+  </div>
+
+  <div class="guess-box">
+    <input type="number" id="guessInput" min="1" max="100" />
+    <button onclick="makeGuess()">Guess</button>
+    <p>Attempts left: <span id="attempts">2</span></p>
+  </div>
+
+  <div class="result" id="result"></div>
+
+  <script>
+    const answer = Math.floor(Math.random() * 100) + 1;
+    let attempts = 2;
+    let clueUsed = false;
+
+    function generateClues(num) {
+      const clues = [
+        `It is ${num % 2 === 0 ? 'even' : 'odd'}`,
+        `It is ${num > 50 ? 'greater' : 'less'} than 50`,
+        `It is divisible by ${[2, 3, 5, 7].find(d => num % d === 0) || 1}`,
+      ];
+
+      // Add one false clue
+      const falseClue = `It is ${num % 2 === 0 ? 'odd' : 'even'}`;
+      clues.splice(Math.floor(Math.random() * 3), 1, falseClue);
+
+      return clues;
+    }
+
+    function generateHiddenClues(num) {
+      return [
+        `It is between ${num - 5} and ${num + 5}`,
+        `Its last digit is ${num % 10}`,
+        `It is ${num % 10 === 0 ? 'a multiple' : 'not a multiple'} of 10`,
+        `It is ${num > 25 ? 'greater' : 'less'} than 25`,
+        `It is divisible by ${[2, 3, 4, 5, 6].find(d => num % d === 0) || 1}`
+      ];
+    }
+
+    const clues = generateClues(answer);
+    document.getElementById('clues').innerHTML = clues.map(c => `<p>${c}</p>`).join('');
+
+    const hiddenClues = generateHiddenClues(answer);
+    const hiddenBtns = hiddenClues.map((clue, i) =>
+      `<button onclick="revealClue('${clue}')" id="hc${i}">Clue ${i + 1}</button>`
+    ).join('');
+    document.getElementById('hiddenButtons').innerHTML = hiddenBtns;
+
+    function revealClue(clue) {
+      if (clueUsed) return;
+      document.getElementById('hiddenClues').innerHTML = `<p><strong>Revealed Clue:</strong> ${clue}</p>`;
+      clueUsed = true;
+    }
+
+    function makeGuess() {
+      if (attempts <= 0) return;
+      const guess = parseInt(document.getElementById('guessInput').value);
+      const result = document.getElementById('result');
+
+      if (!guess || guess < 1 || guess > 100) {
+        result.textContent = "Enter a number between 1 and 100.";
+        return;
+      }
+
+      attempts--;
+      document.getElementById('attempts').textContent = attempts;
+
+      if (guess === answer) {
+        result.innerHTML = `🎉 Correct! The number was ${answer}.`;
+        document.querySelector('button').disabled = true;
+      } else if (attempts === 0) {
+        result.innerHTML = `💔 Out of tries! The number was ${answer}.`;
+      } else {
+        result.innerHTML = `❌ Nope! Try again.`;
+      }
+    }
+  </script>
+</body>
+</html>
+
